@@ -1,16 +1,19 @@
-# This is a sample Python script.
+from fastapi import FastAPI
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from repository.database import database
+from controller.user_controller import router as user_router
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+app = FastAPI()
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
+app.include_router(user_router)

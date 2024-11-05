@@ -3,7 +3,7 @@ services:
   db:
     image: mysql:8.0
     environment:
-      - MYSQL_DATABASE=main
+      - MYSQL_DATABASE=poll_service
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=root_password
