@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from repository.database import database
-from controller.user_controller import router as user_router
+from controller.question_controller import router as question_router
 
 app = FastAPI()
 
@@ -16,4 +16,4 @@ async def shutdown():
     await database.disconnect()
 
 
-app.include_router(user_router)
+app.include_router(question_router)
