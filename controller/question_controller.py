@@ -33,11 +33,10 @@ async def update_question_by_id(question_id: int, question: Question):
     return await question_service.get_question_by_id(question_id)
 
 
-@router.delete("/{question_id}", response_model=Question)
+@router.delete("/{question_id}")
 async def delete_question_by_id(question_id: int):
     question_exists = await question_service.get_question_by_id(question_id)
     if not question_exists:
         raise HTTPException(status_code=404, detail=f"Can't delete question with id:{question_id}, question not found...")
     await question_service.delete_question_by_id(question_id)
-    return question_exists
 
