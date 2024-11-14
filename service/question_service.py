@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from model.question import Question
 from repository import question_repository
@@ -6,6 +6,10 @@ from repository import question_repository
 
 async def get_question_by_id(question_id: int) -> Optional[Question]:
     return await question_repository.get_question_by_id(question_id)
+
+
+async def get_all_questions() -> Optional[List[Question]]:
+    return await question_repository.get_all_questions()
 
 
 async def create_question(question: Question) -> int:

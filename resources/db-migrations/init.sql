@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS question;
+DROP TABLE IF EXISTS questions_users_answer;
 
 CREATE TABLE question(
     id INT(11) NOT NULL AUTO_INCREMENT,
@@ -10,12 +11,11 @@ CREATE TABLE question(
     PRIMARY KEY (id)
 );
 
-CREATE TABLE questions_users_answer(
-    id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE questions_users_answer (
+    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     question_id INT(11) NOT NULL,
     user_id INT(11) NOT NULL,
-    answer VARCHAR(1) NOT NULL,
-    FOREIGN KEY (question_id) REFERENCES question(id)
+    answer VARCHAR(1) NOT NULL
 );
 
 

@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException
 
 from model.question import Question
@@ -16,6 +18,11 @@ async def get_question_by_id(question_id: int):
         raise HTTPException(status_code=404, detail=f"User with id:{question_id} not found...")
     else:
         return question
+
+
+@router.get("/", response_model=List[Question])
+async def get_all_questions():
+    return await question_service.get_all_questions()
 
 
 @router.post("/", response_model=Question)

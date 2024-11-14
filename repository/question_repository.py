@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from model.question import Question
 from repository.database import database
@@ -13,6 +13,12 @@ async def get_question_by_id(question_id: int) -> Optional[Question]:
         return Question(**result)
     else:
         return None
+
+
+async def get_all_questions() -> Optional[List[Question]]:
+    query = f"SELECT * FROM {TABLE_NAME}"
+    results = await database.fetch_all(query)
+    return [Question(**result) for result in results]
 
 
 async def create_question(question: Question) -> int:

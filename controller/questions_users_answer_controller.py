@@ -21,17 +21,21 @@ async def get_answer_by_id(answer_id: int):
         return answer
 
 
-@router.get("/{question_id}/{user_id}", response_model=QuestionsUsersAnswerResponse)
-async def get_answer_by_user_id_and_question_id(question_id: int, user_id: int):
-    answer = await questions_users_answer_service.get_answer_by_question_id_and_user_id(question_id, user_id)
+@router.get("/", response_model=QuestionsUsersAnswerResponse)
+async def get_answer_by_user_id_and_question_id(user_id: int, question_id: int):
+    answer = await questions_users_answer_service.get_answer_by_question_id_and_user_id(user_id, question_id)
     if not answer:
-        raise HTTPException(status_code=404, detail=f"Answer with question_id:{question_id} and user_id:{user_id} not found...")
+        raise HTTPException(status_code=404, detail=f"Answer with user_id:{user_id} and question_id:{question_id} not found, user didn't answered question.")
     else:
         return answer
 
 
 @router.post("/", response_model=QuestionsUsersAnswer)
 async def create_answer(answer: QuestionsUsersAnswerRequest):
+    answer_exists = await questions_users_answer_service.get_answer_by_question_id_and_user_id(answer.user_id, answer.question_id)
+    if answer_exists:
+        raise HTTPException(status_code=404, detail="User has already answered this question.")
+
     answer_id = await questions_users_answer_service.create_answer(answer)
     return await questions_users_answer_service.get_answer_by_id(answer_id)
 
@@ -41,17 +45,23 @@ async def update_answer_by_answer_id(answer_id: int, answer: QuestionsUsersAnswe
     answer_exists = await questions_users_answer_service.get_answer_by_id(answer_id)
     if not answer_exists:
         raise HTTPException(status_code=404, detail=f"Can't update answer with id:{answer_id}, answer not found...")
+    if answer_exists.answer == answer.answer:
+        raise HTTPException(status_code=404, detail=f"Can't update the answer to '{answer.answer}', this answer already exists.")
+
     await questions_users_answer_service.update_answer_by_answer_id(answer_id, answer)
     return await questions_users_answer_service.get_answer_by_id(answer_id)
 
 
-@router.put("/update_answer/{question_id}/{user_id}")
-async def update_answer_by_question_and_user_id(question_id: int, user_id: int, answer: str):
-    answer_exists = await questions_users_answer_service.update_answer_by_question_and_user_id(question_id, user_id)
+@router.put("/update_answer/", response_model=QuestionsUsersAnswer)
+async def update_answer_by_question_and_user_id(user_id: int, question_id: int, answer: str):
+    answer_exists = await questions_users_answer_service.get_answer_by_question_id_and_user_id(user_id, question_id)
     if not answer_exists:
         raise HTTPException(status_code=404, detail=f"Can't update the answer for question id:{question_id}, answer not found...")
-    await questions_users_answer_service.update_answer_by_question_and_user_id(question_id, user_id, answer)
-    return await questions_users_answer_service.update_answer_by_question_and_user_id(question_id, user_id)
+    if answer_exists.answer == answer:
+        raise HTTPException(status_code=404, detail=f"Can't update the answer to '{answer}', it's the answer that exists.")
+
+    await questions_users_answer_service.update_answer_by_question_and_user_id(user_id, question_id, answer)
+    return await questions_users_answer_service.get_answer_by_question_id_and_user_id(user_id, question_id)
 
 
 @router.delete("/{answer_id}")
@@ -65,9 +75,10 @@ async def delete_answer_by_answer_id(answer_id: int):
 @router.delete("/cleanup/")
 async def delete_answers_for_none_existent_users_and_questions():
     existing_users = await user_service_api.get_all_users_id()
-    if not existing_users:
+    existing_questions = [question.id for question in await question_service.get_all_questions()]
+    if not existing_users or not existing_questions:
         raise HTTPException(status_code=404, detail=f"Can't delete answers, there is a user that still exists.")
-    await questions_users_answer_service.delete_answers_for_none_existent_users_and_questions(existing_users)
+    await questions_users_answer_service.delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions)
 
 
 @router.get("/count_answers_per_question/{question_id}")

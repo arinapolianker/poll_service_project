@@ -24,8 +24,7 @@ async def options_mapping(question_id):
     return choices_mapping
 
 
-async def answer_validation(answer: str) -> str:
-    question_id = QuestionsUsersAnswerRequest.question_id
+async def answer_validation(answer: str, question_id: int) -> str:
     options = await options_mapping(question_id)
     if answer not in options:
         raise HTTPException(status_code=400, detail=f"Invalid answer. Select 'a', 'b', 'c', or 'd'.")
@@ -47,8 +46,8 @@ async def get_answer_by_id(answer_id: int) -> Optional[QuestionsUsersAnswerRespo
     return None
 
 
-async def get_answer_by_question_id_and_user_id(question_id: int, user_id: int) -> Optional[QuestionsUsersAnswerResponse]:
-    question_user_answer = await questions_users_answer_repository.get_answer_by_question_id_and_user_id(question_id, user_id)
+async def get_answer_by_question_id_and_user_id(user_id: int, question_id: int) -> Optional[QuestionsUsersAnswerResponse]:
+    question_user_answer = await questions_users_answer_repository.get_answer_by_question_id_and_user_id(user_id, question_id)
     if question_user_answer is not None:
         question_details = await question_service.get_question_by_id(question_user_answer.question_id)
         return QuestionsUsersAnswerResponse(
@@ -65,7 +64,7 @@ async def create_answer(answer: QuestionsUsersAnswerRequest) -> Optional[int]:
     question_id = answer.question_id
     user_id = answer.user_id
     option_answer = answer.answer
-    valid_answer = await answer_validation(option_answer)
+    valid_answer = await answer_validation(option_answer, question_id)
 
     answer_exists = await questions_users_answer_repository.get_answer_by_question_id_and_user_id(question_id, user_id)
 
@@ -86,14 +85,14 @@ async def update_answer_by_answer_id(answer_id: int, answer: QuestionsUsersAnswe
     question_id = answer.question_id
     user_id = answer.user_id
     option_answer = answer.answer
-    valid_answer = await answer_validation(option_answer)
+    valid_answer = await answer_validation(option_answer, question_id)
     updated_answer = QuestionsUsersAnswer(question_id=question_id, user_id=user_id, answer=valid_answer)
     await questions_users_answer_repository.update_answer_by_answer_id(answer_id, updated_answer)
 
 
-async def update_answer_by_question_and_user_id(question_id: int, user_id: int, answer: str):
-    valid_answer = await answer_validation(answer)
-    await questions_users_answer_repository.update_answer_by_question_and_user_id(question_id, user_id, valid_answer)
+async def update_answer_by_question_and_user_id(user_id: int, question_id: int, answer: str):
+    valid_answer = await answer_validation(answer, question_id)
+    await questions_users_answer_repository.update_answer_by_question_and_user_id(user_id, question_id, valid_answer)
 
 
 async def delete_answer_by_id(answer_id: int):
@@ -103,8 +102,10 @@ async def delete_answer_by_id(answer_id: int):
     await questions_users_answer_repository.delete_answer_by_id(answer_id)
 
 
-async def delete_answers_for_none_existent_users_and_questions(existing_users):
-    await questions_users_answer_repository.delete_answers_for_none_existent_users_and_questions(existing_users)
+async def delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions):
+    # existing_users =
+    # existing_questions =
+    await questions_users_answer_repository.delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions)
 
 
 async def get_answers_counts_by_question_id(question_id: int) -> Optional[Dict]:

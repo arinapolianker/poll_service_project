@@ -15,9 +15,9 @@ async def get_answer_by_id(answer_id: int) -> Optional[QuestionsUsersAnswer]:
         return None
 
 
-async def get_answer_by_question_id_and_user_id(question_id: int, user_id: int) -> Optional[QuestionsUsersAnswer]:
-    query = f"SELECT * FROM {TABLE_NAME} WHERE question_id=:question_id AND user_id=:user_id LIMIT 1"
-    result = await database.fetch_one(query, values={"question_id": question_id, "user_id": user_id})
+async def get_answer_by_question_id_and_user_id(user_id: int, question_id: int) -> Optional[QuestionsUsersAnswer]:
+    query = f"SELECT * FROM {TABLE_NAME} WHERE user_id=:user_id AND question_id=:question_id"
+    result = await database.fetch_one(query, values={"user_id": user_id, "question_id": question_id})
     if result:
         return QuestionsUsersAnswer(**result)
     else:
@@ -47,7 +47,7 @@ async def update_answer_by_answer_id(answer_id: int, answer: QuestionsUsersAnswe
         SET question_id = :question_id,
         user_id = :user_id,
         answer = :answer
-        WHERE id = : answer_id
+        WHERE id = :answer_id
     """
     values = {
         "answer_id": answer_id,
@@ -58,17 +58,17 @@ async def update_answer_by_answer_id(answer_id: int, answer: QuestionsUsersAnswe
     await database.execute(query, values)
 
 
-async def update_answer_by_question_and_user_id(question_id: int, user_id: id, answer: str):
+async def update_answer_by_question_and_user_id(user_id: id, question_id: int, answer: str):
     query = f"""
         UPDATE {TABLE_NAME}
         SET answer = :answer
-        WHERE question_id = :question_id
-        AND user_id = :user_id
+        WHERE user_id = :user_id
+        AND question_id = :question_id
     """
     values = {
-        "question_id": question_id,
         "user_id": user_id,
-        "new_answer": answer,
+        "question_id": question_id,
+        "answer": answer,
     }
     await database.execute(query, values)
 
@@ -78,16 +78,16 @@ async def delete_answer_by_id(answer_id: int):
     await database.execute(query, values={"answer_id": answer_id})
 
 
-async def delete_answers_for_none_existent_users_and_questions(existing_users):
-    if not existing_users:
+async def delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions):
+    if not existing_users or not existing_questions:
         return None
 
     query = f"""
     DELETE FROM {TABLE_NAME}
-    WHERE question_id NOT IN (SELECT id FROM question)
+    WHERE question_id NOT IN :existing_questions
     OR user_id NOT IN :existing_users
     """
-    await database.execute(query, values={"existing_users": tuple(existing_users)})
+    await database.execute(query, values={"existing_questions": tuple(existing_questions), "existing_users": tuple(existing_users)})
 
 
 async def get_answers_counts_by_question_id(question_id: int):
