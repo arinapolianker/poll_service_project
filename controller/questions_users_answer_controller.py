@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 
-from api.internalApi.user_service import user_service_api
 from model.questions_users_answer import QuestionsUsersAnswer
 from model.questions_users_answer_request import QuestionsUsersAnswerRequest
 from model.questions_users_answer_response import QuestionsUsersAnswerResponse
