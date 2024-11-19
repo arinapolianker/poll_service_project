@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 
 import httpx
 
@@ -29,19 +29,4 @@ async def get_user_by_user_id(user_id) -> Optional[UserResponse]:
 
         except httpx.HTTPStatusError as exception:
             print(f"Error in getting user '{user_id}'. error: {exception.response}")
-            return None
-
-
-async def get_all_users_id() -> Optional[List[int]]:
-    url = f"{config.USER_SERVICE_BASE_URL}/user"
-    async with httpx.AsyncClient(follow_redirects=True) as client:
-        try:
-            response = await client.get(url)
-            response.raise_for_status()
-            data = response.json()
-            all_users_response = [user['id'] for user in data]
-            return all_users_response
-
-        except httpx.HTTPStatusError as exception:
-            print(f"Error in getting all users. error: {exception.response}")
             return None

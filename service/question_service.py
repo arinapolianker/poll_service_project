@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from model.question import Question
-from repository import question_repository
+from repository import question_repository, questions_users_answer_repository
 
 
 async def get_question_by_id(question_id: int) -> Optional[Question]:
@@ -21,5 +21,6 @@ async def update_question_by_id(question_id: int, question: Question):
 
 
 async def delete_question_by_id(question_id: int):
+    await questions_users_answer_repository.delete_answers_by_question_id(question_id)
     await question_repository.delete_question_by_id(question_id)
 

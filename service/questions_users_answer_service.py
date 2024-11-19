@@ -102,10 +102,8 @@ async def delete_answer_by_id(answer_id: int):
     await questions_users_answer_repository.delete_answer_by_id(answer_id)
 
 
-async def delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions):
-    # existing_users =
-    # existing_questions =
-    await questions_users_answer_repository.delete_answers_for_none_existent_users_and_questions(existing_users, existing_questions)
+async def delete_answers_by_user_id(user_id: int):
+    await questions_users_answer_repository.delete_answers_by_user_id(user_id)
 
 
 async def get_answers_counts_by_question_id(question_id: int) -> Optional[Dict]:
